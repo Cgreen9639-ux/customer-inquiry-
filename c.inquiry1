@@ -1,0 +1,34 @@
+-- File 1: Customer Analysis with Performance Metrics
+
+WITH customer_performance AS (
+  SELECT 
+    c.customer_id,
+    c.name,
+    c.email,
+    c.region,
+    c.signup_date,
+    COUNT(o.order_id) AS total_orders,
+    SUM(o.amount) AS total_revenue,
+    AVG(o.amount) AS avg_order_value,
+    (SUM(o.amount) - (COUNT(o.order_id) * 50)) AS estimated_profit
+  FROM customers c
+  LEFT JOIN orders o ON c.customer_id = o.customer_id
+  GROUP BY c.customer_id, c.name, c.email, c.region, c.signup_date
+)
+SELECT 
+  customer_id,
+  name,
+  email,
+  region,
+  total_orders,
+  total_revenue,
+  avg_order_value,
+  estimated_profit,
+  CASE 
+    WHEN total_revenue > 60000 THEN 'Premium'
+    WHEN total_revenue > 30000 THEN 'Standard'
+    ELSE 'Basic'
+  END AS customer_tier
+FROM customer_performance
+WHERE total_orders > 0
+ORDER BY total_revenue DESC;
